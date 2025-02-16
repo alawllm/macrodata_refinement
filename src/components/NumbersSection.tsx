@@ -1,28 +1,47 @@
+import { useEffect, useState } from "react";
+
 export const NumbersSection = () => {
-    // change layout depending on the screen size
-  const generateNumbers = (count = 180) =>
+  const [grid, setGrid] = useState({ cols: 0, rows: 0, count: 0 });
+  const [numbers, setNumbers] = useState<number[]>([]);
+  const size = 50;
+
+  const calculateGrid = () => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const barHeight = 100;
+    const cols = Math.floor((vw / size)-2);
+    const rows = Math.floor((vh - barHeight) / size);
+    return { cols, rows, count: cols * rows };
+  };
+
+  const generateNumbers = (count: number) =>
     Array.from({ length: count }, () => Math.floor(Math.random() * 9) + 1);
 
-  const generateAnimationStyle = () => ({
-    "--x1": `${Math.random() * 6 - 3}px`,
-    "--y1": `${Math.random() * 6 - 3}px`,
-    "--x2": `${Math.random() * 6 - 3}px`,
-    "--y2": `${Math.random() * 6 - 3}px`,
-    "--x3": `${Math.random() * 6 - 3}px`,
-    "--y3": `${Math.random() * 6 - 3}px`,
-    "--duration": `${Math.random() * 1.5 + 1}s`,
-    "--delay": `${Math.random() * 1}s`,
-  });
+  const updateGrid = () => {
+    const newGrid = calculateGrid();
+    setGrid(newGrid);
+    setNumbers(generateNumbers(newGrid.count));
+  };
 
-  const numbers = generateNumbers();
+  useEffect(() => {
+    updateGrid(); // Initial grid setup
+    window.addEventListener("resize", updateGrid);
+    return () => window.removeEventListener("resize", updateGrid);
+  }, []);
 
   return (
-    <div className="grid grid-cols-20 gap-2 p-2 w-full">
+    <div
+      className="grid w-full mx-auto"
+      style={{
+        gridTemplateColumns: `repeat(${grid.cols}, ${size}px)`,
+        gridTemplateRows: `repeat(${grid.rows}, ${size}px)`,
+        justifyContent: "center",
+        alignContent: "center",
+      }}>
       {numbers.map((num, index) => (
         <div
           key={index}
-          className="flex items-center animate-slight-move justify-center p-4 w-full aspect-square text-xl font-bold transition-transform ease-in-out duration-[1s] hover:scale-200"
-          style={generateAnimationStyle()}>
+          className="flex items-center justify-center text-2xl font-bold border border-gray-300">
           {num}
         </div>
       ))}
